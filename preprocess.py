@@ -3,32 +3,36 @@ Preprocess NSynth dataset to extract pitch and loudness.
 """
 import librosa
 import numpy as np
-from core import extract_loudness, extract_pitch, extract_pitch_v2
+from core import extract_loudness, extract_pitch
 from multiprocessing.dummy import Pool as ThreadPool
 import yaml 
 import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import tensorflow as tf
+#import tensorflow as tf
+import torch
 
 # if you find problems using TF, disable the GPU and inspect
 # tf.config.set_visible_devices([], 'GPU')
 
 
 def preprocess(f, sampling_rate, block_size, signal_length, oneshot, 
-               target_pitch_file, target_loudness_file, pitch_model_capacity="full", **kwargs):
+               target_pitch_file, target_loudness_file, model="full", **kwargs):
     if os.path.exists(os.path.join(target_pitch_file, f.split("/")[-1].replace(".wav", "_pitch.npy"))):
         print("Skipping...")
     
     else:
-        x, sr = librosa.load(f, sampling_rate)
+        x, sr = librosa.load(f, sr=sampling_rate)
+        torch_x = torch.from_numpy(x).unsqueeze(0)
+
+        assert sr == sampling_rate
         N = (signal_length - len(x) % signal_length) % signal_length
         x = np.pad(x, (0, N))
 
         if oneshot:
             x = x[..., :signal_length]
 
-        pitch = extract_pitch(x, sampling_rate, block_size, model_capacity=pitch_model_capacity)
+        pitch = extract_pitch(torch_x, sampling_rate, block_size)
         # v2 is based on my own version of torchcrepe, comment out for now
         # pitch = extract_pitch_v2(x, sampling_rate, block_size)
         loudness = extract_loudness(x, sampling_rate, block_size)
@@ -47,7 +51,7 @@ if __name__ == "__main__":
     with open("config.yaml", 'r') as stream:
         config = yaml.safe_load(stream)
     
-    asyncc = True
+    asyncc = False
     paths = ["train_path", "valid_path", "test_path"]
     
     for path in paths:

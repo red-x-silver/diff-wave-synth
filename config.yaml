@@ -1,7 +1,7 @@
 dataset:
-  train_path: "E:/nsynth/nsynth-train/"
-  valid_path: "E:/nsynth/nsynth-valid/"
-  test_path: "E:/nsynth/nsynth-test/"
+  train_path: "D:/stage3/nsynth/nsynth-train/"
+  valid_path: "D:/stage3/nsynth/nsynth-valid/"
+  test_path: "D:/stage3/nsynth/nsynth-test/"
   train_subset_files: "nsynth_subset/keys_train.txt"
   valid_subset_files: "nsynth_subset/keys_valid.txt"
   test_subset_files: "nsynth_subset/keys_test.txt"

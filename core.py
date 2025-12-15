@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.fft as fft
 import numpy as np
 import librosa as li
-import crepe
+import torchcrepe
 # from torchcrepeV2 import TorchCrepePredictor
 import math
 
@@ -137,18 +137,20 @@ def extract_loudness(audio, sampling_rate, block_size=None, n_fft=2048, frame_ra
     return loudness
 
 
-def extract_pitch(signal, sampling_rate, block_size, model_capacity="full"):
+def extract_pitch(signal, sampling_rate, block_size, fmin = 20, fmax = 330, model="full", batch_size = 512, device='cuda:0'):
     length = signal.shape[-1] // block_size
-    f0 = crepe.predict(
-        signal,
-        sampling_rate,
-        step_size=int(1000 * block_size / sampling_rate),
-        verbose=1,
-        center=True,
-        viterbi=True,
-        model_capacity="full"
+
+    f0 = torchcrepe.predict(
+        audio = signal,
+        sample_rate = sampling_rate,
+        hop_length = int(block_size), #step_size in crepe 
+        fmin = fmin,
+        fmax = fmax,
+        batch_size = batch_size,
+        model=model,
+        device=device
     )
-    f0 = f0[1].reshape(-1)[:-1]
+    f0 = f0.squeeze().reshape(-1)[:-1]
 
     if f0.shape[-1] != length:
         f0 = np.interp(

@@ -10,11 +10,11 @@ from tqdm import tqdm
 # Follow instructions here: https://www.tensorflow.org/datasets/catalog/nsynth#nsynthgansynth_subset
 # to filter out the subset
 
-with open("E:/nsynth/nsynth-train/examples.json") as f:
+with open("D:/stage3/nsynth/nsynth-train/examples.json") as f:
     dic_train = json.load(f)
-with open("E:/nsynth/nsynth-valid/examples.json") as f:  
+with open("D:/stage3/nsynth/nsynth-valid/examples.json") as f:  
     dic_valid = json.load(f) 
-with open("E:/nsynth/nsynth-test/examples.json") as f:  
+with open("D:/stage3/nsynth/nsynth-test/examples.json") as f:  
     dic_test = json.load(f) 
 
 keys_train, keys_valid, keys_test = [], [], []   

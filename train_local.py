@@ -64,14 +64,18 @@ spec_layer = features.STFT(n_fft=2048, freq_bins=None, hop_length=512,
 
 
 def preprocess(f, sampling_rate, block_size, signal_length, oneshot=True):
-    x, sr = librosa.load(f, sampling_rate)
+    x, sr = librosa.load(f, sr=sampling_rate, mono=True)
+    torch_x = torch.from_numpy(x).unsqueeze(0)
+
+    assert sr == sampling_rate
+        
     N = (signal_length - len(x) % signal_length) % signal_length
     x = np.pad(x, (0, N))
 
     if oneshot:
         x = x[..., :signal_length]
 
-    pitch = extract_pitch(x, sampling_rate, block_size)
+    pitch = extract_pitch(torch_x, sampling_rate, block_size)
     loudness = extract_loudness(x, sampling_rate, block_size)
 
     x = x.reshape(-1, signal_length)
