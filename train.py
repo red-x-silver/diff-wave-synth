@@ -12,6 +12,9 @@ from nnAudio import Spectrogram
 import datetime
 from tensorboardX import SummaryWriter
 import matplotlib.pyplot as plt
+import os
+
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 with open("config.yaml", 'r') as stream:
     config = yaml.safe_load(stream)

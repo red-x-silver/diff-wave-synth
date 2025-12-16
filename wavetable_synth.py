@@ -17,18 +17,35 @@ def wavetable_osc(wavetable, freq, sr):
     General wavetable synthesis oscilator.
     """
     freq = freq.squeeze()
-    increment = freq / sr * wavetable.shape[0]
+    N = wavetable.shape[0]
+    increment = freq / sr * N
     index = torch.cumsum(increment, dim=1) - increment[0]
-    index = index % wavetable.shape[0]
+    index = torch.remainder(index, N) # better than %
 
     # uses linear interpolation implementation
-    index_low = torch.floor(index.clone())
-    index_high = torch.ceil(index.clone())
-    alpha = index - index_low
-    index_low = index_low.long()
-    index_high = index_high.long()
+    index_low = torch.floor(index.clone()).long()
+    index_low = index_low % N  
+    index_high = (index_low + 1) % N
 
-    output = wavetable[index_low] + alpha * (wavetable[index_high % wavetable.shape[0]] - wavetable[index_low])
+    alpha = index - index_low.float()
+
+    #print(f"wavetable shape: {wavetable.shape}") #512
+    #print(f"index_low.shape: {index_low.shape}") #torch.Size([64, 64000])
+    #print(f"index_low range: {torch.min(index_low)} to{torch.max(index_low)} ")
+    a = wavetable[index_low]
+
+    
+    #print(f"index_high.shape: {index_high.shape}")
+    
+    #b= index_high % N
+    #print(f"shape of index_high % wavetable.shape[0]: {b.shape}")  #torch.Size([64, 64000])
+    #print(f"index_high % wavetable.shape[0] range: {torch.min(b)} to{torch.max(b)} ")
+    
+    b = wavetable[index_high]
+    output = a + alpha * (b - a)
+    
+
+    #output = wavetable[index_low] + alpha * (wavetable[index_high % wavetable.shape[0]] - wavetable[index_low])
         
     return output
 

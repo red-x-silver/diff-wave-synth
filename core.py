@@ -137,7 +137,7 @@ def extract_loudness(audio, sampling_rate, block_size=None, n_fft=2048, frame_ra
     return loudness
 
 
-def extract_pitch(signal, sampling_rate, block_size, fmin = 20, fmax = 330, model="full", batch_size = 512, device='cuda:0'):
+def extract_pitch(signal, sampling_rate, block_size, fmin = 20, fmax = 330, model="full", batch_size = 2048, device='cuda:0'):
     length = signal.shape[-1] // block_size
 
     f0 = torchcrepe.predict(
@@ -217,7 +217,9 @@ def amp_to_impulse_response(amp, target_size):
     win = torch.hann_window(filter_size, dtype=amp.dtype, device=amp.device)
 
     amp = amp * win
-
+    #print(f"amp shape: {amp.shape}")
+    #print(f"target size: {target_size}")
+    #print(f"filter size: {filter_size}")
     amp = nn.functional.pad(amp, (0, int(target_size) - int(filter_size)))
     amp = torch.roll(amp, -filter_size // 2, -1)
 
