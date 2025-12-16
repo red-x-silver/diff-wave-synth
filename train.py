@@ -13,6 +13,7 @@ import datetime
 from tensorboardX import SummaryWriter
 import matplotlib.pyplot as plt
 import os
+from utils import set_seed
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
@@ -33,6 +34,7 @@ n_wavetables = config["train"]["n_wavetables"]
 n_mfcc = config["train"]["n_mfcc"]
 train_lr = config["train"]["start_lr"]
 epochs = config["train"]["epochs"]
+global_seed = config["common"]["global_seed"]
 
 print("""
 ======================
@@ -48,9 +50,12 @@ n_bands: {}
 n_wavetables: {}
 n_mfcc: {}
 train_lr: {}
+global_seed:{}
 ======================
 """.format(sr, block_size, duration_secs, batch_size, scales, overlap,
-           hidden_size, n_harmonic, n_bands, n_wavetables, n_mfcc, train_lr))
+           hidden_size, n_harmonic, n_bands, n_wavetables, n_mfcc, train_lr, global_seed))
+
+set_seed(global_seed)
 
 model = WTS(hidden_size=hidden_size, n_harmonic=n_harmonic, n_bands=n_bands, sampling_rate=sr,
             block_size=block_size, n_wavetables=n_wavetables, mode="wavetable", 

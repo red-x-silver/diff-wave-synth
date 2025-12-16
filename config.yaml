@@ -14,9 +14,10 @@ common:
   sampling_rate: 16000
   block_size: 160
   duration_secs: 4
+  global_seed: 2258
 
 train:
-  batch_size: 16
+  batch_size: 128
   scales: [4096, 2048, 1024, 512, 256, 128]
   overlap: .75
   start_lr: 0.001
@@ -27,7 +28,8 @@ train:
   n_bands: 65
   n_wavetables: 10
   n_mfcc: 30
-  epochs: 100000
+  epochs: 100
+  
 
 test:
   batch_size: 2

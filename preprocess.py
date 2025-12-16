@@ -23,7 +23,7 @@ def preprocess(f, sampling_rate, block_size, signal_length, oneshot,
     
     else:
         x, sr = librosa.load(f, sr=sampling_rate)
-        torch_x = torch.from_numpy(x).unsqueeze(0)
+        
 
         assert sr == sampling_rate
         N = (signal_length - len(x) % signal_length) % signal_length
@@ -32,6 +32,7 @@ def preprocess(f, sampling_rate, block_size, signal_length, oneshot,
         if oneshot:
             x = x[..., :signal_length]
 
+        torch_x = torch.from_numpy(x).unsqueeze(0)
         pitch = extract_pitch(torch_x, sampling_rate, block_size)
         # v2 is based on my own version of torchcrepe, comment out for now
         # pitch = extract_pitch_v2(x, sampling_rate, block_size)

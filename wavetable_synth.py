@@ -16,10 +16,13 @@ def wavetable_osc(wavetable, freq, sr):
     """
     General wavetable synthesis oscilator.
     """
-    freq = freq.squeeze()
+    #print(f"in wavetable_osc freq input shape: {freq.shape} ")
+    freq = freq.squeeze(-1)
+    #print(f"in wavetable_osc freq after squeeze shape: {freq.shape} ")
     N = wavetable.shape[0]
     increment = freq / sr * N
-    index = torch.cumsum(increment, dim=1) - increment[0]
+    #print(f"in wavetable_osc increment shape: {increment.shape} ")
+    index = torch.cumsum(increment, dim=1) - increment[:, :1] #increment[0]
     index = torch.remainder(index, N) # better than %
 
     # uses linear interpolation implementation
