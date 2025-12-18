@@ -16,12 +16,12 @@ def wavetable_osc(wavetable, freq, sr):
     """
     General wavetable synthesis oscilator.
     """
-    #print(f"in wavetable_osc freq input shape: {freq.shape} ")
+    #print(f"freq shape: {freq.shape}") #64， 64000， 1
     freq = freq.squeeze(-1)
-    #print(f"in wavetable_osc freq after squeeze shape: {freq.shape} ")
+    #print(f"wavetable shape: {wavetable.shape}")  #512
     N = wavetable.shape[0]
     increment = freq / sr * N
-    #print(f"in wavetable_osc increment shape: {increment.shape} ")
+
     index = torch.cumsum(increment, dim=1) - increment[:, :1] #increment[0]
     index = torch.remainder(index, N) # better than %
 
@@ -32,24 +32,12 @@ def wavetable_osc(wavetable, freq, sr):
 
     alpha = index - index_low.float()
 
-    #print(f"wavetable shape: {wavetable.shape}") #512
-    #print(f"index_low.shape: {index_low.shape}") #torch.Size([64, 64000])
-    #print(f"index_low range: {torch.min(index_low)} to{torch.max(index_low)} ")
+
     a = wavetable[index_low]
 
-    
-    #print(f"index_high.shape: {index_high.shape}")
-    
-    #b= index_high % N
-    #print(f"shape of index_high % wavetable.shape[0]: {b.shape}")  #torch.Size([64, 64000])
-    #print(f"index_high % wavetable.shape[0] range: {torch.min(b)} to{torch.max(b)} ")
-    
     b = wavetable[index_high]
     output = a + alpha * (b - a)
-    
 
-    #output = wavetable[index_low] + alpha * (wavetable[index_high % wavetable.shape[0]] - wavetable[index_low])
-        
     return output
 
 
@@ -68,9 +56,9 @@ def generate_wavetable(length, f, cycle=1, phase=0):
 class WavetableSynth(nn.Module):
     def __init__(self,
                  wavetables=None,
-                 n_wavetables=64,
+                 n_wavetables=20,
                  wavetable_len=512,
-                 sr=44100,
+                 sr=16000,
                  duration_secs=3,
                  block_size=160):
         super(WavetableSynth, self).__init__()
@@ -146,15 +134,21 @@ if __name__ == "__main__":
     freq_t = torch.tensor(freq_t)
     freq_t = torch.stack([freq_t, freq_t, freq_t], dim=0)
     sine_wavetable = generate_wavetable(wavetable_len, np.sin)
-    wavetable = torch.tensor([sine_wavetable,])
+    #print(f"{sine_wavetable.shape}")
+    wavetable = torch.tensor(sine_wavetable.unsqueeze(0))
+    #print(f"wavetable after torch.tensor: {wavetable.shape}")
+    #input sine wave to the wavetable
+    #wt_synth = WavetableSynth(wavetables=wavetable, sr=sr, duration_secs=4)
     
-    wt_synth = WavetableSynth(wavetables=wavetable, sr=sr, duration_secs=4)
+    #ask wts to initlaise the wavetable
+    wt_synth = WavetableSynth(n_wavetables = 20, sr=sr, duration_secs=4)
+    
     amplitude_t = torch.ones(sr * duration,)
     amplitude_t = torch.stack([amplitude_t, amplitude_t, amplitude_t], dim=0)
     amplitude_t = amplitude_t.unsqueeze(-1)
 
-    y = wt_synth(freq_t, amplitude_t, duration)
-    print(y.shape, 'y')
+    y = wt_synth(freq_t, amplitude_t) #y = wt_synth(freq_t, amplitude_t, duration)
+    #print(y.shape, 'y')
     plt.plot(y.squeeze()[0].detach().numpy())
     plt.show()
     sf.write('test_3s_v1.wav', y.squeeze()[0].detach().numpy(), sr, 'PCM_24')
