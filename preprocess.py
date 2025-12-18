@@ -94,4 +94,4 @@ if __name__ == "__main__":
                             True,
                             os.path.join(config["dataset"][path], config["dataset"]["pitch"]),
                             os.path.join(config["dataset"][path], config["dataset"]["loudness"]),
-                            pitch_model_capacity=config["crepe"]["model"])
+                            model=config["crepe"]["model"])

@@ -2,9 +2,9 @@ dataset:
   train_path: "D:/stage3/nsynth/nsynth-train/"
   valid_path: "D:/stage3/nsynth/nsynth-valid/"
   test_path: "D:/stage3/nsynth/nsynth-test/"
-  train_subset_files: "nsynth_subset/keys_train.txt"
-  valid_subset_files: "nsynth_subset/keys_valid.txt"
-  test_subset_files: "nsynth_subset/keys_test.txt"
+  train_subset_files: "nsynth_bass_subset/keys_bass_train.txt"
+  valid_subset_files: "nsynth_bass_subset/keys_bass_valid.txt"
+  test_subset_files: "nsynth_bass_subset/keys_bass_test.txt"
   metadata: "examples.json"
   audio: "audio/"
   pitch: "pitch/"
@@ -14,7 +14,7 @@ common:
   sampling_rate: 16000
   block_size: 160
   duration_secs: 4
-  global_seed: 2258
+  global_seed:  28
 
 train:
   batch_size: 128
@@ -26,7 +26,7 @@ train:
   hidden_size: 512
   n_harmonic: 100
   n_bands: 65
-  n_wavetables: 10
+  n_wavetables: 20
   n_mfcc: 30
   epochs: 100
   
@@ -38,10 +38,10 @@ test:
   hidden_size: 512
   n_harmonic: 100
   n_bands: 65
-  n_wavetables: 10
+  n_wavetables: 20
   n_mfcc: 30
 
 crepe:
-  model: "large"
+  model: "full"
 
 visualize: false
