@@ -1,0 +1,56 @@
+common:
+  block_size: 160
+  duration_secs: 4
+  global_seed: 28
+  sampling_rate: 16000
+crepe:
+  model: full
+data:
+  mean_loudness: -45.90259362462579
+  std_loudness: 83.69534087643832
+dataset:
+  audio: audio/
+  loudness: loudness/
+  metadata: examples.json
+  pitch: pitch/
+  test_path: D:/stage3/nsynth/nsynth-test/
+  test_subset_files: nsynth_bass_subset/keys_bass_test.txt
+  train_path: D:/stage3/nsynth/nsynth-train/
+  train_subset_files: nsynth_bass_subset/keys_bass_train.txt
+  valid_path: D:/stage3/nsynth/nsynth-valid/
+  valid_subset_files: nsynth_bass_subset/keys_bass_valid.txt
+test:
+  batch_size: 2
+  hidden_size: 512
+  n_bands: 65
+  n_harmonic: 100
+  n_mfcc: 30
+  n_wavetables: 20
+  overlap: 0.75
+  scales:
+  - 4096
+  - 2048
+  - 1024
+  - 512
+  - 256
+  - 128
+train:
+  batch_size: 64
+  decay_over: 400000
+  epochs: 100
+  hidden_size: 512
+  n_bands: 65
+  n_harmonic: 100
+  n_mfcc: 30
+  n_wavetables: 20
+  overlap: 0.75
+  scales:
+  - 4096
+  - 2048
+  - 1024
+  - 512
+  - 256
+  - 128
+  start_lr: 0.001
+  stop_lr: 0.0001
+visualize: false

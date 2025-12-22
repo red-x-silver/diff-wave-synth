@@ -5,7 +5,7 @@ from core import harmonic_synth
 from wavetable_synth import WavetableSynth
 import torch
 import torch.nn as nn
-from core import mlp, gru, scale_function, remove_above_nyquist, upsample
+from core import mlp, gru, scale_function, remove_above_nyquist, upsample, upsample_pitch
 from core import amp_to_impulse_response, fft_convolve
 import math
 from torchvision.transforms import Resize
@@ -92,6 +92,7 @@ class WTS(nn.Module):
         # use image resize to align dimensions, ddsp also do this...
         mfcc = Resize(size=(self.duration_secs * 100, 16))(mfcc)
 
+        #TODO: scale pitch to be between 0,1 just for inputting to the MLP, this is what ddsp does
         hidden = torch.cat([
             self.in_mlps[0](pitch),
             self.in_mlps[1](loudness),
@@ -119,7 +120,7 @@ class WTS(nn.Module):
         total_amp_2 = self.loudness_mlp(loudness)
 
         amplitudes = upsample(amplitudes, self.block_size)
-        pitch = upsample(pitch, self.block_size)
+        pitch = upsample_pitch(pitch, self.block_size)
         total_amp = upsample(total_amp, self.block_size)    # TODO: wts can't backprop when using this total_amp, not sure why
         total_amp_2 = upsample(total_amp_2, self.block_size)    # use this instead for wavetable
 

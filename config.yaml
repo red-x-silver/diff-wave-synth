@@ -14,19 +14,19 @@ common:
   sampling_rate: 16000
   block_size: 160
   duration_secs: 4
-  global_seed:  28
+  global_seed:  2046
 
 train:
-  batch_size: 128
+  batch_size: 32
   scales: [4096, 2048, 1024, 512, 256, 128]
   overlap: .75
   start_lr: 0.001
-  stop_lr: 0.0001
+  stop_lr: 0.00005
   decay_over: 400000
   hidden_size: 512
-  n_harmonic: 100
+  n_harmonic: 150
   n_bands: 65
-  n_wavetables: 20
+  n_wavetables: 30
   n_mfcc: 30
   epochs: 100
   
@@ -36,12 +36,16 @@ test:
   scales: [4096, 2048, 1024, 512, 256, 128]
   overlap: .75
   hidden_size: 512
-  n_harmonic: 100
+  n_harmonic: 150
   n_bands: 65
-  n_wavetables: 20
+  n_wavetables: 30
   n_mfcc: 30
 
 crepe:
   model: "full"
 
 visualize: false
+
+data:
+  mean_loudness: -39.74668743704927
+  std_loudness: 54.19612404969509

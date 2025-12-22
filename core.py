@@ -8,12 +8,13 @@ import torch.fft as fft
 import numpy as np
 import librosa as li
 import torchcrepe
-# from torchcrepeV2 import TorchCrepePredictor
+#from torchcrepeV2 import TorchCrepePredictor
 import math
+from tqdm import tqdm
 
 
 # torchcrepeV2 is my own version of crepe in torch, not released yet
-# crepe_predictor = TorchCrepePredictor()
+#crepe_predictor = TorchCrepePredictor()
 
 
 def safe_log(x):
@@ -25,10 +26,10 @@ def mean_std_loudness(dataset):
     mean = 0
     std = 0
     n = 0
-    for _, _, l in dataset:
+    for _, loudness, _ in tqdm(dataset):
         n += 1
-        mean += (l.mean().item() - mean) / n
-        std += (l.std().item() - std) / n
+        mean += (loudness.mean().item() - mean) / n
+        std += (loudness.std().item() - std) / n
     return mean, std
 
 
@@ -74,6 +75,16 @@ def upsample(signal, factor):
     signal = nn.functional.interpolate(signal, size=signal.shape[-1] * factor)
     return signal.permute(0, 2, 1)
 
+def upsample_pitch(signal, factor):
+    # signal: (B, frames, 1)
+    signal = signal.permute(0, 2, 1)  # (B, 1, frames)
+    target_len = signal.shape[-1] * factor
+    signal = nn.functional.interpolate(
+        signal,
+        size=target_len,
+        mode="nearest"
+    )
+    return signal.permute(0, 2, 1)  # (B, T, 1)
 
 def remove_above_nyquist(amplitudes, pitch, sampling_rate):
     n_harm = amplitudes.shape[-1]
@@ -137,19 +148,20 @@ def extract_loudness(audio, sampling_rate, block_size=None, n_fft=2048, frame_ra
     return loudness
 
 
-def extract_pitch(signal, sampling_rate, block_size, fmin = 20, fmax = 330, model="full", batch_size = 2048, device='cuda:0'):
+def extract_pitch(signal, sampling_rate, block_size, model="full", batch_size = 4096, device='cuda:0'):
     length = signal.shape[-1] // block_size
+    #print(f"range of signal: {signal.min()} to {signal.max()} with an average abs of {signal.abs().mean()}")  
 
     f0 = torchcrepe.predict(
         audio = signal,
         sample_rate = sampling_rate,
-        hop_length = int(block_size), #step_size in crepe 
-        fmin = fmin,
-        fmax = fmax,
+        hop_length = block_size, #step_size in crepe 
+        fmax=440.,
         batch_size = batch_size,
         model=model,
         device=device
     )
+    #print(f"range of f0: {f0.min()} to {f0.max()} with an average of {f0.mean()}"), NO normalization
     f0 = f0.squeeze().reshape(-1)[:-1]
 
     if f0.shape[-1] != length:
@@ -162,7 +174,7 @@ def extract_pitch(signal, sampling_rate, block_size, fmin = 20, fmax = 330, mode
     return f0
 
 
-# torchcrepeV2 is my own version of crepe in torch, not released yet
+# # torchcrepeV2 is my own version of crepe in torch, not released yet
 # def extract_pitch_v2(signal, sampling_rate, block_size, model_capacity="full"):
 #     length = signal.shape[-1] // block_size
 #     f0 = crepe_predictor.predict(
@@ -246,3 +258,20 @@ def get_scheduler(len_dataset, start_lr, stop_lr, length):
             return stop_lr
 
     return schedule
+
+def hz_to_midi_torch(f0_hz, eps=1e-7):
+    """
+    Convert frequency in Hz to MIDI note number.
+    f0_hz: Tensor (...,)
+    """
+    f0_hz = torch.clamp(f0_hz, min=eps)
+    midi = 12.0 * (torch.log2(f0_hz) - math.log2(440.0)) + 69.0
+    return midi
+
+
+def scale_f0_hz_torch(f0_hz, f0_range=127.0):
+    """
+    Convert Hz → MIDI → normalized [0, 1]
+    """
+    midi = hz_to_midi_torch(f0_hz)
+    return midi / f0_range
